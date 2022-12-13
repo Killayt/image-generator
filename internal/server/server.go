@@ -2,8 +2,10 @@ package server
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Killayt/image-generator/configs"
+	"github.com/Killayt/image-generator/pkg/img"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
@@ -28,7 +30,15 @@ func robotsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
-	rend(w, "favicon\n")
+	buffer, err := img.GenerateFavicon()
+	if err != nil {
+		log.Error(err)
+	}
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
+	if _, err := w.Write(buffer.Bytes()); err != nil {
+		log.Error(err)
+	}
 }
 
 func Run(conf configs.ConfI) {
