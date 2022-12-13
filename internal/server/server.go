@@ -2,7 +2,10 @@ package server
 
 import (
 	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 
 	"github.com/Killayt/image-generator/configs"
 	"github.com/Killayt/image-generator/pkg/img"
@@ -48,8 +51,18 @@ func Run(conf configs.ConfI) {
 	r.HandleFunc("/ping", pingHandler)
 	r.HandleFunc("/robots", robotsHandler)
 	r.HandleFunc("/favicon", faviconHandler)
-	log.Println("Server is starting ...")
-	if err := http.ListenAndServe(":"+conf.GetPort(), r); err != nil {
-		log.Fatal(err)
-	}
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		log.Println("Server is starting ...")
+		if err := http.ListenAndServe(":"+conf.GetPort(), r); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	signalValue := <-sigs
+	signal.Stop(sigs)
+	log.Println("STOP SIGNAL", signalValue)
 }

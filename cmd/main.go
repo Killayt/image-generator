@@ -8,7 +8,7 @@ import (
 	"github.com/Killayt/image-generator/internal/server"
 )
 
-var confPath = flag.String("conf-path", "./configs/.env", "Getting port from env")
+var confPath = flag.String("conf-path", "configs/.env", "Path to config file (.env).")
 
 func main() {
 	conf, err := configs.New(*confPath)
